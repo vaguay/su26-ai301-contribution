@@ -1,15 +1,19 @@
-# Contribution [#]: [Issue Title]
+# Contribution 1: Persist Local Development Database Across Docker Restarts
 
-**Contribution Number:** [1 / 2 / 3]  
-**Student:** [Your Name]  
-**Issue:** [GitHub issue link]  
-**Status:** [Phase I / Phase II / Phase III / Phase IV] [In Progress / Complete]
+**Contribution Number:** 1
+**Student:** Vanesa Aguay Guerra
+**Issue:** #2198
+**Status:** Phase I - In Progress
 
 ---
 
 ## Why I Chose This Issue
 
-[1-2 paragraphs explaining why this issue interests you, how it matches your skills/learning goals, what you hope to learn]
+I chose this issue because it is a concrete systems problem with a clear definition of success. I was looking for an issue where I could understand the problem in plain language, identify the affected components, and trace how a fix would impact the overall developer experience.
+
+The issue also aligns well with my interests in systems engineering, infrastructure, and reliability. Through coursework in data structures and systems programming, research work involving distributed measurement systems, and projects involving deployment pipelines and APIs, I have become interested in understanding how technical systems behave across environments and where failures occur. This issue sits at the intersection of software infrastructure and developer tooling, which makes it both practical and a strong opportunity to learn more about Docker, PostgreSQL persistence, and application startup workflows.
+
+Beyond solving the issue itself, I hope to gain experience contributing to a larger open source codebase, understanding how maintainers think about developer experience, and improving my ability to debug system-level problems.
 
 ---
 
@@ -17,19 +21,29 @@
 
 ### Problem Description
 
-[In your own words, what's broken or missing?]
+The local development database does not persist across Docker restarts. Every time developers restart the Docker environment, locally created database data is erased and replaced with a fresh database.
 
 ### Expected Behavior
 
-[What should happen?]
+The PostgreSQL database should persist data across Docker restarts.
+
+If a developer creates or modifies data locally, that data should still exist after running Docker again. Developers should also have a simple way to intentionally reset the database when they want a clean environment.
 
 ### Current Behavior
 
-[What actually happens?]
+Currently, running `docker compose up` wipes locally created database data because the PostgreSQL container does not use a persistent volume. In addition, the backend startup process automatically clears and reseeds the database every time it starts.
+
+As a result, developers lose local data whenever the Docker environment is restarted, making testing and development workflows more difficult.
 
 ### Affected Components
 
-[Which parts of the codebase are involved?]
+Based on my initial review, the issue appears to involve:
+
+- Docker configuration files, particularly `docker-compose.yml`
+- PostgreSQL container configuration
+- Backend startup scripts
+- The `populate_db` process responsible for clearing and reseeding the database
+- Development environment setup and database initialization logic 
 
 ---
 
