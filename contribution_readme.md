@@ -51,44 +51,83 @@ Based on my initial review, the issue appears to involve:
 
 ### Environment Setup
 
-[Notes on setting up your local development environment - challenges you faced, how you solved them]
+I reviewed the issue discussion and linked pull request to understand the current development workflow. The issue affects Activist's Docker-based local development environment and specifically the PostgreSQL database setup. Based on the maintainer discussion, the problem occurs because database state is not persisted across container restarts and the startup process reseeds the database on launch.
 
 ### Steps to Reproduce
 
-1. [Step 1]
-2. [Step 2]
-3. [Observed result]
+1. Clone the Activist repository and complete the local Docker setup.
+2. Start the development environment using `docker compose up`.
+3. Create or modify data in the local PostgreSQL database.
+4. Verify that the data exists in the application or database.
+5. Stop the Docker containers.
+6. Restart the development environment using `docker compose up`.
+7. Reopen the application and inspect the database contents.
+8. Observe that previously created local data has been removed and replaced with a fresh seeded database.
 
 ### Reproduction Evidence
 
-- **Commit showing reproduction:** [Link to commit in your fork]
-- **Screenshots/logs:** [If applicable]
-- **My findings:** [What you discovered during reproduction]
+Issue Link: https://github.com/activist-org/activist/issues/2198
+
+Related Pull Request: https://github.com/activist-org/activist/pull/2199
+
+Branch Link: https://github.com/[YOUR_USERNAME]/activist/tree/fix-local-db-persistence
+
+My Findings:
+
+The PostgreSQL container currently does not maintain local development data across Docker restarts. Additionally, the backend startup process runs database initialization logic that clears and reseeds data, resulting in loss of locally created records. This creates friction for contributors who need persistent test data during development.
 
 ---
 
-## Solution Approach
+## Implementation Plan
 
-### Analysis
+### Understand
 
-[Your analysis of the root cause - what's causing the issue?]
+The goal is to ensure local PostgreSQL data persists across Docker restarts while still giving developers a simple way to intentionally reset and reseed their database when needed.
 
-### Proposed Solution
+### Match
 
-[High-level description of your fix approach]
+The issue discussion and related pull request suggest two common infrastructure patterns:
 
-### Implementation Plan
+* Using Docker volumes to persist database state.
+* Separating initial database seeding from normal application startup.
 
-Using UMPIRE framework (adapted):
+These patterns are widely used in containerized development environments to improve reliability and developer experience.
 
-**Understand:** [Restate the problem]
+### Plan
 
-**Match:** [What similar patterns/solutions exist in the codebase?]
+* Review the current `docker-compose.yml` configuration.
+* Identify how the PostgreSQL container is currently storing data.
+* Add a persistent Docker volume for database storage.
+* Review the backend startup process and locate where `populate_db` is executed.
+* Modify initialization behavior so the database is not automatically cleared on every startup.
+* Preserve a separate workflow for developers who want a fresh seeded database.
+* Test persistence by creating local data, restarting Docker, and confirming the data remains available.
+* Verify that the manual reset workflow continues to function correctly.
 
-**Plan:** [Step-by-step implementation plan]
-1. [Modify file X to do Y]
-2. [Add function Z]
-3. [Update tests]
+### Implement
+
+Working Branch:
+
+https://github.com/[YOUR_USERNAME]/activist/tree/fix-local-db-persistence
+
+### Review
+
+Before submitting a solution I will verify that:
+
+* The change follows Activist contribution guidelines.
+* Database persistence works across multiple Docker restarts.
+* Existing development workflows are not broken.
+* Documentation accurately reflects any workflow changes.
+
+### Evaluate
+
+Success will be measured by:
+* Local data remaining available after Docker restarts.
+* No automatic database wipe during normal startup.
+* Ability to intentionally reset and reseed the database when desired.
+* Successful execution of existing project tests and development workflows.
+
+
 
 **Implement:** [Link to your branch/commits as you work]
 
